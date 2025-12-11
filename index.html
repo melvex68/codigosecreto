@@ -3,148 +3,285 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generador de Código Secreto ASCII/Binario</title>
+    <title>Codificador Secreto: Panel de Control</title>
     <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #0f172a;
+            --panel: #1e293b;
+            --text: #e2e8f0;
+            --border: #334155;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f2f5;
+            font-family: 'Courier New', Courier, monospace; /* Fuente tipo máquina de escribir/hacker */
+            background-color: var(--bg);
+            color: var(--text);
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 30px;
-            color: #333;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
         }
 
         h1 {
-            color: #2c3e50;
+            text-shadow: 0 0 10px rgba(37, 99, 235, 0.5);
+            margin-bottom: 30px;
+            letter-spacing: 2px;
         }
 
-        .controls {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
+        /* Layout principal */
+        .main-container {
             display: flex;
-            gap: 10px;
-            align-items: center;
+            flex-wrap: wrap;
+            gap: 30px;
+            max-width: 1200px;
+            width: 100%;
+            justify-content: center;
+            align-items: flex-start;
         }
 
-        input[type="text"] {
-            padding: 10px;
-            font-size: 16px;
-            border: 2px solid #ddd;
-            border-radius: 4px;
+        /* Panel de Controles (Izquierda) */
+        .control-panel {
+            background-color: var(--panel);
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
             width: 300px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
 
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #3498db;
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-weight: bold;
+            font-size: 0.9em;
+            color: #94a3b8;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        span.value-display {
+            color: var(--primary);
+        }
+
+        /* Estilos de los inputs */
+        input[type="text"] {
+            background: #0f172a;
+            border: 1px solid var(--border);
+            color: white;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+
+        button.download-btn {
+            background-color: var(--primary);
             color: white;
             border: none;
-            border-radius: 4px;
+            padding: 15px;
+            border-radius: 6px;
+            font-weight: bold;
             cursor: pointer;
-            transition: background-color 0.2s;
+            margin-top: 10px;
+            transition: all 0.2s;
+            font-family: inherit;
+            text-transform: uppercase;
         }
 
-        button:hover {
-            background-color: #2980b9;
+        button.download-btn:hover {
+            background-color: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(37, 99, 235, 0.4);
         }
 
-        #canvas-container {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            display: none; /* Oculto hasta que se genere algo */
+        /* Área de visualización (Derecha) */
+        .preview-area {
+            flex-grow: 1;
+            display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
+            min-height: 400px;
+            background-color: #e5e5e5; /* Fondo claro para ver bien la imagen */
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+            overflow: auto;
         }
 
         canvas {
-            border: 2px solid #333; /* Borde exterior grueso como en el ejemplo */
-            /* Desactiva el suavizado para que los píxeles se vean nítidos */
-            image-rendering: -moz-crisp-edges;
-            image-rendering: -webkit-optimize-contrast;
-            image-rendering: crisp-edges;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             image-rendering: pixelated;
         }
-        
-        .download-hint {
-            margin-top: 10px;
-            font-size: 14px;
-            color: #666;
+
+        .watermark {
+            position: absolute;
+            bottom: 10px;
+            right: 20px;
+            color: #888;
+            font-size: 12px;
+            font-style: italic;
         }
+
     </style>
 </head>
 <body>
 
-    <h1>Generador de Código Secreto</h1>
+    <h1>/// GENERADOR DE CÓDIGO ///</h1>
 
-    <div class="controls">
-        <input type="text" id="phraseInput" placeholder="Escribe tu frase aquí..." value="Busca en el pasillo">
-        <button onclick="generateCodeImage()">Generar Imagen</button>
-    </div>
+    <div class="main-container">
+        
+        <div class="control-panel">
+            <div class="input-group">
+                <label>FRASE SECRETA</label>
+                <input type="text" id="phraseInput" value="Busca en el pasillo" placeholder="Escribe aquí...">
+            </div>
 
-    <div id="canvas-container">
-        <h3 style="margin-top: 0; margin-bottom: 10px;">Código Generado:</h3>
-        <canvas id="codeCanvas"></canvas>
-        <p class="download-hint">💡 Haz clic derecho en la imagen y selecciona "Guardar imagen como..." para descargarla.</p>
+            <hr style="border: 0; border-top: 1px solid var(--border); width: 100%; margin: 5px 0;">
+
+            <div class="input-group">
+                <label>Nivel de Caos (Posición) <span id="val-jitter" class="value-display">2.0</span></label>
+                <input type="range" id="jitterRange" min="0" max="10" step="0.1" value="2.0">
+            </div>
+
+            <div class="input-group">
+                <label>Nivel de Rotación <span id="val-rotate" class="value-display">4°</span></label>
+                <input type="range" id="rotateRange" min="0" max="45" step="1" value="4">
+            </div>
+
+            <div class="input-group">
+                <label>Tamaño de Celda <span id="val-size" class="value-display">30px</span></label>
+                <input type="range" id="sizeRange" min="10" max="100" step="5" value="30">
+            </div>
+
+            <button class="download-btn" onclick="downloadImage()">Descargar Imagen</button>
+        </div>
+
+        <div class="preview-area">
+            <canvas id="codeCanvas"></canvas>
+            <div class="watermark">Vista Previa</div>
+        </div>
     </div>
 
     <script>
-        function generateCodeImage() {
-            const phrase = document.getElementById('phraseInput').value;
-            if (!phrase) {
-                alert("Por favor, escribe una frase primero.");
-                return;
-            }
+        // Referencias a los elementos del DOM
+        const phraseInput = document.getElementById('phraseInput');
+        const jitterRange = document.getElementById('jitterRange');
+        const rotateRange = document.getElementById('rotateRange');
+        const sizeRange = document.getElementById('sizeRange');
+        
+        // Referencias a los textos de valor
+        const valJitter = document.getElementById('val-jitter');
+        const valRotate = document.getElementById('val-rotate');
+        const valSize = document.getElementById('val-size');
 
-            // 1. Configuración de la cuadrícula
-            const cellSize = 25; // Tamaño de cada cuadrado (píxel) en la imagen
-            const cols = 8; // Siempre son 8 bits por carácter
-            const rows = phrase.length; // Una fila por cada carácter de la frase
+        const canvas = document.getElementById('codeCanvas');
+        const ctx = canvas.getContext('2d');
 
-            const canvas = document.getElementById('codeCanvas');
-            const ctx = canvas.getContext('2d');
+        // Función principal de dibujo
+        function draw() {
+            const text = phraseInput.value;
+            // Si no hay texto, no hacemos nada (o limpiamos)
+            if (!text) return;
 
-            // 2. Establecer el tamaño del canvas
-            canvas.width = cols * cellSize;
-            canvas.height = rows * cellSize;
+            // Obtener valores actuales de los sliders
+            const jitter = parseFloat(jitterRange.value);
+            const maxAngle = parseInt(rotateRange.value);
+            const cellSize = parseInt(sizeRange.value);
 
-            // 3. Procesar la frase y dibujar
+            // Actualizar etiquetas de texto
+            valJitter.textContent = jitter;
+            valRotate.textContent = maxAngle + "°";
+            valSize.textContent = cellSize + "px";
+
+            // Configuración base
+            const cols = 8;
+            const rows = text.length;
+            const margin = cellSize; // Un margen igual a una celda alrededor
+
+            // Ajustar tamaño del canvas
+            canvas.width = (cols * cellSize) + (margin * 2);
+            canvas.height = (rows * cellSize) + (margin * 2);
+
+            // Fondo: Color papel sucio/viejo
+            ctx.fillStyle = '#f0f0f0';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Mover origen para respetar margen
+            ctx.translate(margin, margin);
+
+            // Bucle principal
             for (let i = 0; i < rows; i++) {
-                // Obtener el código ASCII del carácter
-                let charCode = phrase.charCodeAt(i);
-                // Convertir a binario (string) y asegurar que tenga 8 dígitos rellenando con ceros a la izquierda
+                let charCode = text.charCodeAt(i);
                 let binaryString = charCode.toString(2).padStart(8, '0');
 
                 for (let j = 0; j < cols; j++) {
                     const bit = binaryString[j];
-                    const x = j * cellSize;
-                    const y = i * cellSize;
-
-                    // Elegir el color: '1' es negro, '0' es blanco
-                    ctx.fillStyle = (bit === '1') ? '#000000' : '#ffffff';
                     
-                    // Dibujar el cuadrado relleno
-                    ctx.fillRect(x, y, cellSize, cellSize);
+                    // Calcular centro teórico
+                    const targetX = j * cellSize;
+                    const targetY = i * cellSize;
+                    const centerX = targetX + cellSize / 2;
+                    const centerY = targetY + cellSize / 2;
 
-                    // Opcional: Dibujar una cuadrícula gris fina para separar celdas (como en el ejemplo)
-                    ctx.strokeStyle = '#888888';
-                    ctx.lineWidth = 1;
-                    ctx.strokeRect(x, y, cellSize, cellSize);
+                    // Calcular distorsión aleatoria basada en los sliders
+                    const randomJitterX = (Math.random() - 0.5) * jitter * 2;
+                    const randomJitterY = (Math.random() - 0.5) * jitter * 2;
+                    
+                    // Convertir grados a radianes para la rotación
+                    const angleRad = (Math.random() - 0.5) * 2 * (maxAngle * Math.PI / 180);
+
+                    ctx.save(); // Guardar estado
+
+                    // Mover al punto distorsionado
+                    ctx.translate(centerX + randomJitterX, centerY + randomJitterY);
+                    ctx.rotate(angleRad);
+
+                    // Color: Negro sucio o Blanco sucio
+                    ctx.fillStyle = (bit === '1') ? '#111111' : '#eeeeee';
+
+                    // Dibujar celda (un poco más grande para solapamiento estético)
+                    const drawSize = cellSize * 1.1; 
+                    ctx.fillRect(-drawSize/2, -drawSize/2, drawSize, drawSize);
+
+                    ctx.restore(); // Restaurar estado
                 }
             }
-
-            // Mostrar el contenedor del resultado
-            document.getElementById('canvas-container').style.display = 'flex';
         }
 
-        // Generar automáticamente la imagen de ejemplo al cargar la página
-        window.onload = generateCodeImage;
+        // Función de descarga
+        function downloadImage() {
+            const link = document.createElement('a');
+            link.download = 'codigo_secreto_juego.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        // Event Listeners: Escuchar cambios en tiempo real
+        // 'input' se dispara mientras arrastras, 'change' al soltar. Usamos 'input' para fluidez.
+        [phraseInput, jitterRange, rotateRange, sizeRange].forEach(el => {
+            el.addEventListener('input', draw);
+        });
+
+        // Dibujo inicial
+        draw();
+
     </script>
 
 </body>
