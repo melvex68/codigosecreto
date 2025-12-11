@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Código Secreto ASCII/Binario</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px;
+            color: #333;
+        }
+
+        h1 {
+            color: #2c3e50;
+        }
+
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            width: 300px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        #canvas-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: none; /* Oculto hasta que se genere algo */
+            flex-direction: column;
+            align-items: center;
+        }
+
+        canvas {
+            border: 2px solid #333; /* Borde exterior grueso como en el ejemplo */
+            /* Desactiva el suavizado para que los píxeles se vean nítidos */
+            image-rendering: -moz-crisp-edges;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+            image-rendering: pixelated;
+        }
+        
+        .download-hint {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Generador de Código Secreto</h1>
+
+    <div class="controls">
+        <input type="text" id="phraseInput" placeholder="Escribe tu frase aquí..." value="Busca en el pasillo">
+        <button onclick="generateCodeImage()">Generar Imagen</button>
+    </div>
+
+    <div id="canvas-container">
+        <h3 style="margin-top: 0; margin-bottom: 10px;">Código Generado:</h3>
+        <canvas id="codeCanvas"></canvas>
+        <p class="download-hint">💡 Haz clic derecho en la imagen y selecciona "Guardar imagen como..." para descargarla.</p>
+    </div>
+
+    <script>
+        function generateCodeImage() {
+            const phrase = document.getElementById('phraseInput').value;
+            if (!phrase) {
+                alert("Por favor, escribe una frase primero.");
+                return;
+            }
+
+            // 1. Configuración de la cuadrícula
+            const cellSize = 25; // Tamaño de cada cuadrado (píxel) en la imagen
+            const cols = 8; // Siempre son 8 bits por carácter
+            const rows = phrase.length; // Una fila por cada carácter de la frase
+
+            const canvas = document.getElementById('codeCanvas');
+            const ctx = canvas.getContext('2d');
+
+            // 2. Establecer el tamaño del canvas
+            canvas.width = cols * cellSize;
+            canvas.height = rows * cellSize;
+
+            // 3. Procesar la frase y dibujar
+            for (let i = 0; i < rows; i++) {
+                // Obtener el código ASCII del carácter
+                let charCode = phrase.charCodeAt(i);
+                // Convertir a binario (string) y asegurar que tenga 8 dígitos rellenando con ceros a la izquierda
+                let binaryString = charCode.toString(2).padStart(8, '0');
+
+                for (let j = 0; j < cols; j++) {
+                    const bit = binaryString[j];
+                    const x = j * cellSize;
+                    const y = i * cellSize;
+
+                    // Elegir el color: '1' es negro, '0' es blanco
+                    ctx.fillStyle = (bit === '1') ? '#000000' : '#ffffff';
+                    
+                    // Dibujar el cuadrado relleno
+                    ctx.fillRect(x, y, cellSize, cellSize);
+
+                    // Opcional: Dibujar una cuadrícula gris fina para separar celdas (como en el ejemplo)
+                    ctx.strokeStyle = '#888888';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(x, y, cellSize, cellSize);
+                }
+            }
+
+            // Mostrar el contenedor del resultado
+            document.getElementById('canvas-container').style.display = 'flex';
+        }
+
+        // Generar automáticamente la imagen de ejemplo al cargar la página
+        window.onload = generateCodeImage;
+    </script>
+
+</body>
+</html>
